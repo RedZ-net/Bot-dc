@@ -1,11 +1,17 @@
 import discord
 from discord.ext import commands
 import asyncio
-
 import os
+
 TOKEN = os.getenv("DISCORD_TOKEN")  # Get token from environment variables
 
-bot = commands.Bot(command_prefix='!', self_bot=True)
+# Create intents
+intents = discord.Intents.default()
+intents.message_content = True  # Required to read message content
+
+# Create bot with intents
+bot = commands.Bot(command_prefix='!', self_bot=True, intents=intents)
+
 tasks = {}  # Dictionary to track running tasks by channel_id
 
 @bot.event
