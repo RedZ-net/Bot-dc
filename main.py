@@ -1,23 +1,43 @@
 import discord
 from discord.ext import commands
-import asyncio
 import os
+import asyncio
+from http.server import SimpleHTTPRequestHandler
+from socketserver import TCPServer
 
-# Get token from environment variables
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-# Check if token is being loaded correctly
-if not TOKEN:
-    raise ValueError("No token found! Ensure 'DISCORD_TOKEN' is set in your environment variables.")
+# Create intents
+intents = discord.Intents.default()
+intents.message_content = True  # Required to read message content
 
-# Create bot (no need for intents in discord.py-self)
-bot = commands.Bot(command_prefix='!', self_bot=True)
+# Create bot with intents
+bot = commands.Bot(command_prefix="!", self_bot=True, intents=intents)
 
 tasks = {}  # Dictionary to track running tasks by channel_id
 
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} ({bot.user.id})")
+
+# Adding simple HTTP server for Uptime Robot
+def run_http_server():
+    handler = SimpleHTTPRequestHandler
+    with TCPServer(("", 8080), handler) as httpd:
+        print("HTTP server running on port 8080...")
+        httpd.serve_forever()
+
+# Start the HTTP server in a separate thread
+async def start_http_server():
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, run_http_server)
+
+# Start both bot and HTTP server
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user} ({bot.user.id})")
+    # Start the HTTP server after the bot is ready
+    asyncio.create_task(start_http_server())
 
 @bot.command()
 async def message(ctx, *, args=None):
@@ -78,5 +98,4 @@ async def stop(ctx, channel_id: int):
     else:
         await ctx.send("No active message loop found for that channel.")
 
-# Run bot
 bot.run(TOKEN)
