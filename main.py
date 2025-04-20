@@ -3,7 +3,8 @@ from discord.ext import commands
 import asyncio
 import os
 
-TOKEN = os.getenv("DISCORD_TOKEN")  # Get token from environment variables
+# Get token from environment variables
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 # Create intents
 intents = discord.Intents.default()
@@ -77,4 +78,5 @@ async def stop(ctx, channel_id: int):
     else:
         await ctx.send("No active message loop found for that channel.")
 
+# Run bot
 bot.run(TOKEN)
